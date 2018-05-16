@@ -14,9 +14,9 @@ struct sub_port_red : SVGPort {
 	}
 };
 
-struct sub_port_blue : SVGPort {
-	sub_port_blue() {
-		setSVG(SVG::load(assetPlugin(plugin, "res/Components/sub_port_blue.svg")));
+struct sub_port_black : SVGPort {
+	sub_port_black() {
+		setSVG(SVG::load(assetPlugin(plugin, "res/Components/sub_port_black.svg")));
 	}
 };
 

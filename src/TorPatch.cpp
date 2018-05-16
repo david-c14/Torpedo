@@ -35,11 +35,11 @@ void TorPatch::step() {
 
 struct TorPatchWidget : ModuleWidget {
 	TorPatchWidget(TorPatch *module) : ModuleWidget(module) {
-		setPanel(SVG::load(assetPlugin(plugin, "res/LD-106.svg")));
+		setPanel(SVG::load(assetPlugin(plugin, "res/TorPatch.svg")));
 
-		addInput(Port::create<sub_port>(Vec(4,77), Port::INPUT, module, TorPatch::INPUT_TOR));
+		addInput(Port::create<sub_port_black>(Vec(4,77), Port::INPUT, module, TorPatch::INPUT_TOR));
 
-		addOutput(Port::create<sub_port_blue>(Vec(62,77), Port::OUTPUT, module, TorPatch::OUTPUT_TOR));
+		addOutput(Port::create<sub_port_black>(Vec(62,77), Port::OUTPUT, module, TorPatch::OUTPUT_TOR));
 
 		addParam(ParamWidget::create<sub_knob_small>(Vec(4, 105), module, TorPatch::PARAM_1, -10.0f, 10.0f, 5.0f));
 	}
