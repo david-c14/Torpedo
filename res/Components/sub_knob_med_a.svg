@@ -18,16 +18,16 @@
        fill="#000000"
        stroke="none"/>
     <rect x="17.5" y="2.5" width="3" height="8"
-       fill="#003399"
+       fill="#993300"
        stroke="none"/> 
     <path d="M 19 3 l 1.5 3.5 l -1.5 3.5 l -1.5 -3.5 z"
-       fill="#0099cc"
+       fill="#cc9933"
        stroke="none"/>
     <circle
        cx="19"
        cy="6.5"
        r="1.5"
-       fill="#00ccff"
+       fill="#ffbb66"
        stroke="none"/>
   </g>
 </svg>
