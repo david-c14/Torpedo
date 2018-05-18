@@ -56,6 +56,7 @@ struct TorPatch : Module  {
 		PARAM_1,		// The first knob parameter
 		PARAM_2,		// The second knob parameter
 		PARAM_3,		// The red/yellow/green light switch
+		PARAM_SEND,		// Push button to send message
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -94,6 +95,7 @@ struct TorPatch : Module  {
 	PulseGenerator complete;	// These are only used to keep the
 	PulseGenerator error;		// tiny lights lit for 1/10 second.
 	PulseGenerator receive;
+	SchmittTrigger sendTrigger;	// Detect send button
 
 		// Wrap a Torpedo output port around a regular output port
 	TorPatchOutputPort outPort = TorPatchOutputPort(this, OUTPUT_TOR);
@@ -114,6 +116,8 @@ void TorPatch::step() {
 		// queue semantics of the port and just try to send a 
 		// message every step.
 		//
+	if (sendTrigger.process(params[PARAM_SEND].value))
+		toSend = 1;
 	if (outputs[OUTPUT_V1].value != params[PARAM_1].value)
 		toSend = 1;
 	outputs[OUTPUT_V1].value = params[PARAM_1].value;
@@ -266,6 +270,7 @@ struct TorPatchWidget : ModuleWidget {
 		addParam(p2);
 		p3 = ParamWidget::create<sub_sw_3>(Vec(53, 105), module, TorPatch::PARAM_3, 0.0f, 2.0f, 0.0f);
 		addParam(p3);
+		addParam(ParamWidget::create<CKD6>(Vec(50, 19), module, TorPatch::PARAM_SEND, 0.0f, 1.0f, 0.0f));
 
 		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(53, 140), module, TorPatch::LIGHT_GREEN));
 		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(4, 45), module, TorPatch::LIGHT_RECEIVE));
