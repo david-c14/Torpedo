@@ -268,11 +268,11 @@ struct TorPatchWidget : ModuleWidget {
 		addParam(p1);
 		p2 = ParamWidget::create<sub_knob_med>(Vec(79, 105), module, TorPatch::PARAM_2, -5.0f, 5.0f, 0.0f);
 		addParam(p2);
-		p3 = ParamWidget::create<sub_sw_3>(Vec(53, 105), module, TorPatch::PARAM_3, 0.0f, 2.0f, 0.0f);
+		p3 = ParamWidget::create<sub_sw_3>(Vec(53, 265), module, TorPatch::PARAM_3, 0.0f, 2.0f, 0.0f);
 		addParam(p3);
 		addParam(ParamWidget::create<CKD6>(Vec(50, 19), module, TorPatch::PARAM_SEND, 0.0f, 1.0f, 0.0f));
 
-		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(53, 140), module, TorPatch::LIGHT_GREEN));
+		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(52, 300), module, TorPatch::LIGHT_GREEN));
 		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(4, 45), module, TorPatch::LIGHT_RECEIVE));
 		addChild(ModuleLightWidget::create<TinyLight<RedLight>>(Vec(26, 45), module, TorPatch::LIGHT_ERROR));
 		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(114, 45), module, TorPatch::LIGHT_COMPLETE));
