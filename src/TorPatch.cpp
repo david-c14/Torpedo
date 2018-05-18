@@ -18,6 +18,7 @@
 
 
 #include "TorpedoDemo.hpp"
+#include <mutex>
 #include "dsp/digital.hpp"
 				// torpedo.hpp is the only include necessary 
 				// to use torpedo. Your project should also
@@ -75,6 +76,10 @@ struct TorPatch : Module  {
 		LIGHT_RECEIVE,		// The tiny message receive light
 		NUM_LIGHTS
 	};
+
+	std::mutex mtx;			// Mutex for locking between 
+					// module and widget
+
 	float v1;			// These hold received param values
 	float v2;			// so that the widget can get them
 	float v3;
@@ -174,18 +179,40 @@ void TorPatchInputPort::received(std::string pluginName, std::string moduleName,
 
 	tpModule->receive.trigger(0.1f);
 
+	float v1 = 0.0f;
+	float v2 = 0.0f;
+	float v3 = 0.0f;
+	int s1 = 0;
+	int s2 = 0;
+	int s3 = 0;
+
 	json_t *j1 = json_object_get(rootJ, "param1");
-
-	if (j1)
-		tpModule->v1 = json_number_value(j1);
+	if (j1) {
+		v1 = json_number_value(j1);
+		s1 = 1;
+	}
 	json_t *j2 = json_object_get(rootJ, "param2");
-	if (j2)
-		tpModule->v2 = json_number_value(j2);
+	if (j2) {
+		v2 = json_number_value(j2);
+		s2 = 1;
+	}
 	json_t *j3 = json_object_get(rootJ, "param3");
-	if (j3) 
-		tpModule->v3 = json_number_value(j3);
-
-	tpModule->isDirty = 1;
+	if (j3) {
+		v3 = json_number_value(j3);
+		s3 = 1;
+	}
+	
+	// Lock using the mutex
+	{
+		std::lock_guard<std::mutex> guard(tpModule->mtx);
+		if (s1)
+			tpModule->v1 = v1;
+		if (s2)
+			tpModule->v2 = v2;
+		if (s3)
+			tpModule->v3 = v3;
+		tpModule->isDirty = 1;
+	}
 
 	if (!tpModule->hasWidget) {
 		engineSetParam(tpModule, TorPatch::PARAM_1, tpModule->v1);
@@ -247,12 +274,34 @@ struct TorPatchWidget : ModuleWidget {
 		tpModule->hasWidget = 1;
 	}
 
+	//
+	// In this module widget step function we use a mutex to 
+	// prevent race conditions between the module and the widget.
+	// Because they are running in different threads.
+	// We do the bare minimum we can inside the guarded section
 	void step() override {
-		if (tpModule->isDirty) {
-			p1->setValue(tpModule->v1);
-			p2->setValue(tpModule->v2);
-			p3->setValue(tpModule->v3);
-			tpModule->isDirty = 0;
+		float v1 = 0.0f;
+		float v2 = 0.0f;
+		float v3 = 0.0f;
+		int isDirty = 0;
+
+		// Lock using the mutex
+		{
+			std::lock_guard<std::mutex> guard(tpModule->mtx);
+
+			if (tpModule->isDirty) {
+				v1 = tpModule->v1;
+				v2 = tpModule->v2;
+				v3 = tpModule->v3;
+				tpModule->isDirty = 0;
+				isDirty = 1;
+			}
+		}
+
+		if (isDirty) {
+			p1->setValue(v1);
+			p2->setValue(v2);
+			p3->setValue(v3);
 		}
 		ModuleWidget::step();
 	}
