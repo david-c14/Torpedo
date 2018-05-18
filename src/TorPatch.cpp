@@ -1,15 +1,48 @@
+/******************************************************
+**
+** Reference example for sending and receiving using
+** the PatchInputPort and PatchOutputPort objects
+** which implement the PTCH protocol.
+**
+** In this demo we have 
+**
+** 	completed method
+**	received method
+**	error method
+**	send method
+**	isBusy method
+**
+**	checking the message type (pluginName and moduleName)
+**
+*******************************************************/
+
+
 #include "TorpedoDemo.hpp"
 #include "dsp/digital.hpp"
+				// torpedo.hpp is the only include necessary 
+				// to use torpedo. Your project should also
+				// compile and link torpedo.cpp
 #include "torpedo.hpp"
 
-struct TorPatch;
+struct TorPatch;		// Forward declaration, because I want to
+				// include a reference to the module in 
+				// the ports.
 
+	// 
+	// I'm subclassing the PatchOutpuPort only because I want to
+	// use the completed method to light a little green light.
+	// Otherwise I could use the PatchOutputPort directly
+	//
 struct TorPatchOutputPort : Torpedo::PatchOutputPort {
 	TorPatch *tpModule;
 	TorPatchOutputPort(TorPatch *module, unsigned int portNum):Torpedo::PatchOutputPort((Module *)module, portNum) {tpModule = module;};
 	void completed() override;
 };
 
+	//
+	// I have to subclass the PatchInputPort so that I can override the
+	// received method to actually get at received messages
+	//
 struct TorPatchInputPort : Torpedo::PatchInputPort {
 	TorPatch *tpModule;
 	TorPatchInputPort(TorPatch *module, unsigned int portNum):Torpedo::PatchInputPort((Module *)module, portNum) {tpModule = module;};
@@ -19,45 +52,63 @@ struct TorPatchInputPort : Torpedo::PatchInputPort {
 
 struct TorPatch : Module  {
 	enum ParamIds {
-		PARAM_1,
-		PARAM_2,
-		PARAM_3,
+		PARAM_1,		// The first knob parameter
+		PARAM_2,		// The second knob parameter
+		PARAM_3,		// The red/yellow/green light switch
 		NUM_PARAMS
 	};
 	enum InputIds {
-		INPUT_TOR,
+		INPUT_TOR,		// An input port for torpedo to use
 		NUM_INPUTS
 	};
 	enum OutputIds {
-		OUTPUT_TOR,
-		OUTPUT_V1,
-		OUTPUT_V2,
+		OUTPUT_TOR,		// An output port for torpedo to use
+		OUTPUT_V1,		// The first knob output
+		OUTPUT_V2,		// The second knob output
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-		LIGHT_GREEN,
-		LIGHT_RED,
-		LIGHT_COMPLETE,
-		LIGHT_ERROR,
-		LIGHT_RECEIVE,
+		LIGHT_GREEN,		// The big green/yellow/red light
+		LIGHT_RED,		// The big green/yellow/red light
+		LIGHT_COMPLETE,		// The tiny completed light
+		LIGHT_ERROR,		// The tiny error light
+		LIGHT_RECEIVE,		// The tiny message receive light
 		NUM_LIGHTS
 	};
-	float v1;
-	float v2;
+	float v1;			// These hold received param values
+	float v2;			// so that the widget can get them
 	float v3;
-	int toSend = 1;
-	int isDirty = 0;
-	int hasWidget = 0;
-	PulseGenerator complete;
-	PulseGenerator error;
+
+	int toSend = 1;			// A flag to say we have changes to send
+
+	int isDirty = 0;		// A flag to say we have received
+					// changes.
+
+	int hasWidget = 0;		// This module is not headless
+
+	PulseGenerator complete;	// These are only used to keep the
+	PulseGenerator error;		// tiny lights lit for 1/10 second.
 	PulseGenerator receive;
+
+		// Wrap a Torpedo output port around a regular output port
 	TorPatchOutputPort outPort = TorPatchOutputPort(this, OUTPUT_TOR);
+
+		// Wrap a Torpedo input port around a regular input port
 	TorPatchInputPort inPort = TorPatchInputPort(this, INPUT_TOR);
+
 	TorPatch() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
+
 	void step() override;
 };
 
 void TorPatch::step() {
+		//
+		// Detect parameter changes so we don't send messages
+		// continuously.  This is optional. We could send messages
+		// every time the port is not busy, or we could use the
+		// queue semantics of the port and just try to send a 
+		// message every step.
+		//
 	if (outputs[OUTPUT_V1].value != params[PARAM_1].value)
 		toSend = 1;
 	outputs[OUTPUT_V1].value = params[PARAM_1].value;
@@ -70,9 +121,23 @@ void TorPatch::step() {
 	if (lights[LIGHT_GREEN].value != (params[PARAM_3].value < 1.5f))
 		toSend = 1;
 	lights[LIGHT_GREEN].value = (params[PARAM_3].value < 1.5f);
+
+		//
+		// Here we use the pulse generators to keep the lights lit
+		// for 1/10 second.
+		//
 	lights[LIGHT_RECEIVE].value = receive.process(engineGetSampleTime());
 	lights[LIGHT_ERROR].value = error.process(engineGetSampleTime());
 	lights[LIGHT_COMPLETE].value = complete.process(engineGetSampleTime());
+
+		//
+		// If we have some changes to send, and the port is not 
+		// already mid-message, construct a json object and send it
+		// The plugin slug is a good way to control the identity
+		// of your message, but the moduleName parameter does not
+		// need to be an actual module name; it's more a way of 
+		// distinguishing one message type from another
+		//
 	if (toSend && !outPort.isBusy()) {
 		json_t *rootJ = json_object();
 		json_object_set_new(rootJ, "param1", json_real(params[PARAM_1].value));
@@ -81,14 +146,34 @@ void TorPatch::step() {
 		outPort.send(std::string(TOSTRING(SLUG)), std::string("TorPatch"), rootJ);
 		toSend = 0;
 	}
+
+		//
+		// The torpedo ports must be processed every step if they are
+		// not going to miss anything
+		//
 	outPort.process();
 	inPort.process();
 }
 
+	//
+	// This received method is called whenever the PatchInputPort receives
+	// a message using the PTCH protocol. It will extract the pluginName,
+	// moduleName and the patch json from the message and pass it in here
+	//
+	// In this method I'm rejecting any message of a type I don't want
+	// to process.
+	// Set the tiny received light
+	// Place the received parameters into the module
+	// If the module is headless, update the parameters directly.
+	// Otherwise the isDirty flag will signal the moduleWidget to update.
+	//
 void TorPatchInputPort::received(std::string pluginName, std::string moduleName, json_t *rootJ) {
+
 	if (pluginName.compare(TOSTRING(SLUG))) return;
 	if (moduleName.compare("TorPatch")) return;
+
 	tpModule->receive.trigger(0.1f);
+
 	json_t *j1 = json_object_get(rootJ, "param1");
 
 	if (j1)
@@ -99,7 +184,9 @@ void TorPatchInputPort::received(std::string pluginName, std::string moduleName,
 	json_t *j3 = json_object_get(rootJ, "param3");
 	if (j3) 
 		tpModule->v3 = json_number_value(j3);
+
 	tpModule->isDirty = 1;
+
 	if (!tpModule->hasWidget) {
 		engineSetParam(tpModule, TorPatch::PARAM_1, tpModule->v1);
 		engineSetParam(tpModule, TorPatch::PARAM_2, tpModule->v2);
@@ -107,19 +194,34 @@ void TorPatchInputPort::received(std::string pluginName, std::string moduleName,
 	}
 }
 
+	//
+	// If the input port receives a broken message it will call error
+	// I'm overriding that to set the tiny red error light
+	//
 void TorPatchInputPort::error(unsigned int errorType) {
 	tpModule->error.trigger(0.1f);
 }
 
+	//
+	// Once the output port has finished sending a message it will
+	// call the completed method. I'm overriding that to set a light
+	//
 void TorPatchOutputPort::completed() {
 	tpModule->complete.trigger(0.1f);
 }
 
+	//
+	// The module widget step method checks the module's isDirty flag
+	// and if it needs to it updates the knobs and switches
+	//
 struct TorPatchWidget : ModuleWidget {
+
 	TorPatch *tpModule;
+
 	ParamWidget *p1;
 	ParamWidget *p2;
 	ParamWidget *p3;
+
 	TorPatchWidget(TorPatch *module) : ModuleWidget(module) {
 		tpModule = module;
 		setPanel(SVG::load(assetPlugin(plugin, "res/TorPatch.svg")));
@@ -144,6 +246,7 @@ struct TorPatchWidget : ModuleWidget {
 		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(114, 45), module, TorPatch::LIGHT_COMPLETE));
 		tpModule->hasWidget = 1;
 	}
+
 	void step() override {
 		if (tpModule->isDirty) {
 			p1->setValue(tpModule->v1);
