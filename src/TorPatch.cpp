@@ -25,8 +25,8 @@
 				// compile and link torpedo.cpp
 #include "torpedo.hpp"
 
-struct TorPatch;		// Forward declaration, because I want to
-				// include a reference to the module in 
+struct TorPatch;		// Forward declarations, because I want to
+struct TorPatchNano;		// include a reference to the module in 
 				// the ports.
 
 	// 
@@ -312,4 +312,132 @@ struct TorPatchWidget : ModuleWidget {
 	}
 };
 
+	//
+	// I have to subclass the PatchInputPort so that I can override the
+	// received method to actually get at received messages
+	//
+struct TorPatchNanoInputPort : Torpedo::PatchInputPort {
+	TorPatchNano *tpModule;
+	TorPatchNanoInputPort(TorPatchNano *module, unsigned int portNum):Torpedo::PatchInputPort((Module *)module, portNum) {tpModule = module;};
+	void received(std::string pluginName, std::string moduleName, json_t *rootJ) override;
+	void error(unsigned int errorType) override;
+};
+
+//
+// A cut down TorPatch module with no knobs or torpedo output port.
+//
+struct TorPatchNano : Module  {
+	enum ParamIds {
+		PARAM_1,		// The first knob parameter
+		PARAM_2,		// The second knob parameter
+		PARAM_3,		// The red/yellow/green light switch
+		NUM_PARAMS
+	};
+	enum InputIds {
+		INPUT_TOR,		// An input port for torpedo to use
+		NUM_INPUTS
+	};
+	enum OutputIds {
+		OUTPUT_V1,		// The first knob output
+		OUTPUT_V2,		// The second knob output
+		NUM_OUTPUTS
+	};
+	enum LightIds {
+		LIGHT_GREEN,		// The big green/yellow/red light
+		LIGHT_RED,		// The big green/yellow/red light
+		LIGHT_ERROR,		// The tiny error light
+		LIGHT_RECEIVE,		// The tiny message receive light
+		NUM_LIGHTS
+	};
+
+	PulseGenerator error;		// tiny lights lit for 1/10 second.
+	PulseGenerator receive;
+
+		// Wrap a Torpedo input port around a regular input port
+	TorPatchNanoInputPort inPort = TorPatchNanoInputPort(this, INPUT_TOR);
+
+	TorPatchNano() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
+
+	void step() override;
+};
+
+void TorPatchNano::step() {
+		//
+		// Update outputs and the red/green light.
+		//
+	outputs[OUTPUT_V1].value = params[PARAM_1].value;
+	outputs[OUTPUT_V2].value = params[PARAM_2].value;
+	lights[LIGHT_RED].value = (params[PARAM_3].value > 0.5f);
+	lights[LIGHT_GREEN].value = (params[PARAM_3].value < 1.5f);
+
+		//
+		// Here we use the pulse generators to keep the lights lit
+		// for 1/10 second.
+		//
+	lights[LIGHT_ERROR].value = error.process(engineGetSampleTime());
+	lights[LIGHT_RECEIVE].value = receive.process(engineGetSampleTime());
+
+		//
+		// The torpedo ports must be processed every step if they are
+		// not going to miss anything
+		//
+	inPort.process();
+}
+
+	//
+	// This received method is called whenever the PatchInputPort receives
+	// a message using the PTCH protocol. It will extract the pluginName,
+	// moduleName and the patch json from the message and pass it in here
+	//
+	// In this method I'm rejecting any message of a type I don't want
+	// to process.
+	// Set the tiny received light
+	// Place the received parameters into the module
+	//
+void TorPatchNanoInputPort::received(std::string pluginName, std::string moduleName, json_t *rootJ) {
+
+	if (pluginName.compare(TOSTRING(SLUG))) return;
+	if (moduleName.compare("TorPatch")) return;
+
+	tpModule->receive.trigger(0.1f);
+
+	json_t *j1 = json_object_get(rootJ, "param1");
+	if (j1) {
+		engineSetParam(tpModule, TorPatchNano::PARAM_1, json_number_value(j1));
+	}
+	json_t *j2 = json_object_get(rootJ, "param2");
+	if (j2) {
+		engineSetParam(tpModule, TorPatchNano::PARAM_1, json_number_value(j2));
+	}
+	json_t *j3 = json_object_get(rootJ, "param3");
+	if (j3) {
+		engineSetParam(tpModule, TorPatchNano::PARAM_1, json_number_value(j3));
+	}
+}
+
+	//
+	// If the input port receives a broken message it will call error
+	// I'm overriding that to set the tiny red error light
+	//
+void TorPatchNanoInputPort::error(unsigned int errorType) {
+	tpModule->error.trigger(0.1f);
+}
+
+struct TorPatchNanoWidget : ModuleWidget {
+
+	TorPatchNano *tpModule;
+
+	TorPatchNanoWidget(TorPatchNano *module) : ModuleWidget(module) {
+		setPanel(SVG::load(assetPlugin(plugin, "res/TorPatch.svg")));
+
+		addOutput(Port::create<sub_port>(Vec(4,149), Port::OUTPUT, module, TorPatch::OUTPUT_V1));
+		addOutput(Port::create<sub_port>(Vec(92,149), Port::OUTPUT, module, TorPatch::OUTPUT_V2));
+
+		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(52, 300), module, TorPatch::LIGHT_GREEN));
+		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(4, 45), module, TorPatch::LIGHT_RECEIVE));
+		addChild(ModuleLightWidget::create<TinyLight<RedLight>>(Vec(26, 45), module, TorPatch::LIGHT_ERROR));
+	}
+};
+
 Model *modelTorPatch = Model::create<TorPatch, TorPatchWidget>("TorpedoDemo", "Torpedo Patch Demo", "Torpedo Patch Demo", LOGIC_TAG);
+Model *modelTorPatchNano = Model::create<TorPatchNano, TorPatchNanoWidget>("TorpedoDemo", "Torpedo Patch Nano Demo", "Torpedo Patch Demo Cut Down Module", LOGIC_TAG);
