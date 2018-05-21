@@ -426,16 +426,16 @@ void TorPatchNanoInputPort::error(unsigned int errorType) {
 struct TorPatchNanoWidget : ModuleWidget {
 
 	TorPatchNanoWidget(TorPatchNano *module) : ModuleWidget(module) {
-		setPanel(SVG::load(assetPlugin(plugin, "res/TorPatch.svg")));
+		setPanel(SVG::load(assetPlugin(plugin, "res/TorPatchNano.svg")));
 
-		addInput(Port::create<sub_port_black>(Vec(4,19), Port::INPUT, module, TorPatchNano::INPUT_TOR));
+		addInput(Port::create<sub_port_black>(Vec(2.5,19), Port::INPUT, module, TorPatchNano::INPUT_TOR));
 
-		addOutput(Port::create<sub_port>(Vec(4,149), Port::OUTPUT, module, TorPatchNano::OUTPUT_V1));
-		addOutput(Port::create<sub_port>(Vec(92,149), Port::OUTPUT, module, TorPatchNano::OUTPUT_V2));
+		addOutput(Port::create<sub_port>(Vec(2.5,114), Port::OUTPUT, module, TorPatchNano::OUTPUT_V1));
+		addOutput(Port::create<sub_port>(Vec(2.5,204), Port::OUTPUT, module, TorPatchNano::OUTPUT_V2));
 
-		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(52, 300), module, TorPatchNano::LIGHT_GREEN));
-		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(4, 45), module, TorPatchNano::LIGHT_RECEIVE));
-		addChild(ModuleLightWidget::create<TinyLight<RedLight>>(Vec(26, 45), module, TorPatchNano::LIGHT_ERROR));
+		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(7, 300), module, TorPatchNano::LIGHT_GREEN));
+		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(2.5, 45), module, TorPatchNano::LIGHT_RECEIVE));
+		addChild(ModuleLightWidget::create<TinyLight<RedLight>>(Vec(24.5, 45), module, TorPatchNano::LIGHT_ERROR));
 	}
 };
 

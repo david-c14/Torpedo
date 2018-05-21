@@ -60,11 +60,15 @@
      inkscape:groupmode="layer"
      id="group1"
      font-family="DejaVu Sans"
-     font-size="6"
-     stroke="#ffffff"
-     stroke-width="1"
-     stroke-linecap="round"
-     stroke-linejoin="round"
-     fill="none">
+     font-size="10"
+     stroke="none"
+     fill="#ffffff">
+    <text x="16" y="60" text-anchor="middle">IN</text>
+    <text x="104" y="60" text-anchor="middle">OUT</text>
+    <text x="78" y="50" text-anchor="middle">SEND</text>
+    <text x="23" y="185" text-anchor="middle">CV1</text>
+    <text x="97" y="185" text-anchor="middle">CV2</text>
+    <text x="60" y="330" text-anchor="middle">OOOH, LOOK AT</text>
+    <text x="60" y="340" text-anchor="middle">THE PRETTY LIGHT</text>
   </g>
 </svg>
