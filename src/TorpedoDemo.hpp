@@ -7,5 +7,6 @@ extern Plugin *plugin;
 
 // Forward-declare each Model, defined in each module source file
 extern Model *modelTorPatch;
+extern Model *modelTorPatchNano;
 
 #include "ComponentLibrary/components.hpp"

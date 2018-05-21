@@ -407,11 +407,11 @@ void TorPatchNanoInputPort::received(std::string pluginName, std::string moduleN
 	}
 	json_t *j2 = json_object_get(rootJ, "param2");
 	if (j2) {
-		engineSetParam(tpModule, TorPatchNano::PARAM_1, json_number_value(j2));
+		engineSetParam(tpModule, TorPatchNano::PARAM_2, json_number_value(j2));
 	}
 	json_t *j3 = json_object_get(rootJ, "param3");
 	if (j3) {
-		engineSetParam(tpModule, TorPatchNano::PARAM_1, json_number_value(j3));
+		engineSetParam(tpModule, TorPatchNano::PARAM_3, json_number_value(j3));
 	}
 }
 
@@ -425,17 +425,17 @@ void TorPatchNanoInputPort::error(unsigned int errorType) {
 
 struct TorPatchNanoWidget : ModuleWidget {
 
-	TorPatchNano *tpModule;
-
 	TorPatchNanoWidget(TorPatchNano *module) : ModuleWidget(module) {
 		setPanel(SVG::load(assetPlugin(plugin, "res/TorPatch.svg")));
 
-		addOutput(Port::create<sub_port>(Vec(4,149), Port::OUTPUT, module, TorPatch::OUTPUT_V1));
-		addOutput(Port::create<sub_port>(Vec(92,149), Port::OUTPUT, module, TorPatch::OUTPUT_V2));
+		addInput(Port::create<sub_port_black>(Vec(4,19), Port::INPUT, module, TorPatchNano::INPUT_TOR));
 
-		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(52, 300), module, TorPatch::LIGHT_GREEN));
-		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(4, 45), module, TorPatch::LIGHT_RECEIVE));
-		addChild(ModuleLightWidget::create<TinyLight<RedLight>>(Vec(26, 45), module, TorPatch::LIGHT_ERROR));
+		addOutput(Port::create<sub_port>(Vec(4,149), Port::OUTPUT, module, TorPatchNano::OUTPUT_V1));
+		addOutput(Port::create<sub_port>(Vec(92,149), Port::OUTPUT, module, TorPatchNano::OUTPUT_V2));
+
+		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(52, 300), module, TorPatchNano::LIGHT_GREEN));
+		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(4, 45), module, TorPatchNano::LIGHT_RECEIVE));
+		addChild(ModuleLightWidget::create<TinyLight<RedLight>>(Vec(26, 45), module, TorPatchNano::LIGHT_ERROR));
 	}
 };
 
