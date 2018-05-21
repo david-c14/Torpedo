@@ -79,6 +79,12 @@ struct sub_btn : SVGSwitch, ToggleSwitch {
 	}
 };
 
+struct sub_btn_moment : SVGSwitch, MomentarySwitch {
+	sub_btn_moment() {
+		addFrame(SVG::load(assetPlugin(plugin, "res/Components/sub_btn_moment.svg")));
+	}
+};
+
 //////////////////
 // Knobs
 //////////////////
