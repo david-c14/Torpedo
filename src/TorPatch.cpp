@@ -261,8 +261,8 @@ struct TorPatchWidget : ModuleWidget {
 
 		addOutput(Port::create<sub_port_black>(Vec(92,19), Port::OUTPUT, module, TorPatch::OUTPUT_TOR));
 
-		addOutput(Port::create<sub_port>(Vec(4,149), Port::OUTPUT, module, TorPatch::OUTPUT_V1));
-		addOutput(Port::create<sub_port>(Vec(92,149), Port::OUTPUT, module, TorPatch::OUTPUT_V2));
+		addOutput(Port::create<sub_port>(Vec(11,149), Port::OUTPUT, module, TorPatch::OUTPUT_V1));
+		addOutput(Port::create<sub_port>(Vec(85,149), Port::OUTPUT, module, TorPatch::OUTPUT_V2));
 
 		p1 = ParamWidget::create<sub_knob_med>(Vec(4, 105), module, TorPatch::PARAM_1, -5.0f, 5.0f, 0.0f);
 		addParam(p1);
@@ -270,7 +270,7 @@ struct TorPatchWidget : ModuleWidget {
 		addParam(p2);
 		p3 = ParamWidget::create<sub_sw_3>(Vec(53, 265), module, TorPatch::PARAM_3, 0.0f, 2.0f, 0.0f);
 		addParam(p3);
-		addParam(ParamWidget::create<sub_btn_moment>(Vec(50, 19), module, TorPatch::PARAM_SEND, 0.0f, 1.0f, 0.0f));
+		addParam(ParamWidget::create<sub_btn_moment>(Vec(70, 22), module, TorPatch::PARAM_SEND, 0.0f, 1.0f, 0.0f));
 
 		addChild(ModuleLightWidget::create<LargeLight<GreenRedLight>>(Vec(52, 300), module, TorPatch::LIGHT_GREEN));
 		addChild(ModuleLightWidget::create<TinyLight<GreenLight>>(Vec(4, 45), module, TorPatch::LIGHT_RECEIVE));
