@@ -32,32 +32,8 @@ void RawOutputPort::abort(void) {
 	_counter = 0;
 }
 
-void RawOutputPort::send(std::string appId, std::string message) {
-	_appId.assign(appId);
-	send(message);
-}
-
-void RawOutputPort::send(std::string message) {
-	if (!_port->active) return;
-	if (!message.length()) {
-		raiseError(ERROR_LENGTH);
-		return;
-	}
-	if (dbg) debug("Torpedo Send:%s %s", _appId.c_str(), message.c_str());
-	switch (_state) {
-		case STATE_HEADER:
-		case STATE_BODY:
-		case STATE_TRAILER:
-			abort();
-			break;
-		case STATE_ABORTING:
-			break;
-		case STATE_QUIESCENT:
-			_state = STATE_HEADER;
-			break;
-	}
-	_message.assign(message);
-	_counter = 0;
+void RawOutputPort::completed(void) {
+	if (dbg) debug("Torpedo Completed:");
 }
 
 void RawOutputPort::process(void) {
@@ -143,12 +119,32 @@ void RawOutputPort::process(void) {
 	_port->value = 1.0f * portValue;
 }
 
-void RawOutputPort::completed(void) {
-	if (dbg) debug("Torpedo Completed:");
+void RawOutputPort::send(std::string appId, std::string message) {
+	_appId.assign(appId);
+	send(message);
 }
 
-void RawInputPort::received(std::string appId, std::string message) {
-	if (dbg) debug("Torpedo Received:%s %s", appId.c_str(), message.c_str());
+void RawOutputPort::send(std::string message) {
+	if (!_port->active) return;
+	if (!message.length()) {
+		raiseError(ERROR_LENGTH);
+		return;
+	}
+	if (dbg) debug("Torpedo Send:%s %s", _appId.c_str(), message.c_str());
+	switch (_state) {
+		case STATE_HEADER:
+		case STATE_BODY:
+		case STATE_TRAILER:
+			abort();
+			break;
+		case STATE_ABORTING:
+			break;
+		case STATE_QUIESCENT:
+			_state = STATE_HEADER;
+			break;
+	}
+	_message.assign(message);
+	_counter = 0;
 }
 
 void RawInputPort::process(void) {
@@ -272,16 +268,31 @@ void RawInputPort::process(void) {
 	}
 }
 
+void RawInputPort::received(std::string appId, std::string message) {
+	if (dbg) debug("Torpedo Received:%s %s", appId.c_str(), message.c_str());
+}
+
 void TextInputPort::received(std::string appId, std::string message) {
 	if (!appId.compare("TEXT"))
 		received(message);
 }
 
-void QueuedOutputPort::size(unsigned int s) {
-	if (s < 1) {
-		return;
+void QueuedOutputPort::abort() {
+	RawOutputPort::abort();
+	for (auto i : _queue) delete i;
+	_queue.clear();
+}
+
+void QueuedOutputPort::process() {
+	if (!RawOutputPort::isBusy()) {
+		if (_queue.size()) {
+			std::string *s = _queue.front();
+			_queue.pop_front();
+			RawOutputPort::send(std::string(*s));
+			delete s;
+		}
 	}
-	_size = s;
+	RawOutputPort::process();
 }
 
 void QueuedOutputPort::send(std::string message) {
@@ -304,22 +315,11 @@ void QueuedOutputPort::send(std::string message) {
 	RawOutputPort::send(message);
 }
 
-void QueuedOutputPort::process() {
-	if (!RawOutputPort::isBusy()) {
-		if (_queue.size()) {
-			std::string *s = _queue.front();
-			_queue.pop_front();
-			RawOutputPort::send(std::string(*s));
-			delete s;
-		}
+void QueuedOutputPort::size(unsigned int s) {
+	if (s < 1) {
+		return;
 	}
-	RawOutputPort::process();
-}
-
-void QueuedOutputPort::abort() {
-	RawOutputPort::abort();
-	for (auto i : _queue) delete i;
-	_queue.clear();
+	_size = s;
 }
 
 void MessageOutputPort::send(std::string pluginName, std::string moduleName, std::string message) {
