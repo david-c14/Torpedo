@@ -121,6 +121,8 @@ struct TorStore : Module  {
 	TorStore() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
 
 	void step() override;
+	json_t *toJson() override;
+	void fromJson(json_t *rootJ) override;
 };
 
 void TorStore::step() {
@@ -133,6 +135,36 @@ void TorStore::step() {
 		lights[LIGHT_STORE_1 + i].value = (apps[i].length() > 0);
 		outPorts[i].process();
 		inPorts[i].process();
+	}
+}
+
+json_t *TorStore::toJson(void) {
+	json_t *rootJ = json_object();
+	json_t *array = json_array();
+	for (int i = 0; i < deviceCount; i++) {
+		json_array_append_new(array, json_string(apps[i].c_str()));
+		json_array_append_new(array, json_string(messages[i].c_str()));
+	}
+	json_object_set_new(rootJ, "messages", array);
+	return rootJ;
+}
+
+void TorStore::fromJson(json_t *rootJ) {
+	json_t *j0 = json_object_get(rootJ, "messages");
+	if (j0) {
+		int size = json_array_size(j0);
+		if (size > (deviceCount * 2))
+			size = (deviceCount * 2);
+		if (size % 2)
+			size -= 1;
+		for (int i = 0; i < deviceCount; i++) {
+			json_t *j1 = json_array_get(j0, i * 2);
+			if (j1)
+				apps[i].assign(json_string_value(j1));
+			json_t *j2 = json_array_get(j0, i * 2 + 1);
+			if (j2)
+				messages[i].assign(json_string_value(j2));
+		}
 	}
 }
 
