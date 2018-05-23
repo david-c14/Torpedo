@@ -89,9 +89,9 @@ struct TorStore : Module  {
 		NUM_LIGHTS
 	};
 
-	std::vector<std::string> apps = {"","","","","","","","","",""};
-	std::vector<std::string> messages = {"","","","","","","","","",""};
-	std::vector<TorStoreInputPort> inPorts = {
+	std::string apps[10] = {"","","","","","","","","",""};
+	std::string messages[10] = {"","","","","","","","","",""};
+	TorStoreInputPort inPorts[10] = {
 		TorStoreInputPort(this, INPUT_TOR_1),
 		TorStoreInputPort(this, INPUT_TOR_2),
 		TorStoreInputPort(this, INPUT_TOR_3),
@@ -103,7 +103,7 @@ struct TorStore : Module  {
 		TorStoreInputPort(this, INPUT_TOR_9),
 		TorStoreInputPort(this, INPUT_TOR_10)
 	};
-	std::vector<Torpedo::RawOutputPort> outPorts = {
+	Torpedo::RawOutputPort outPorts[10] = {
 		Torpedo::RawOutputPort(this, OUTPUT_TOR_1),
 		Torpedo::RawOutputPort(this, OUTPUT_TOR_2),
 		Torpedo::RawOutputPort(this, OUTPUT_TOR_3),
