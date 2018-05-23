@@ -287,7 +287,7 @@ void QueuedOutputPort::process() {
 	if (!RawOutputPort::isBusy()) {
 		if (_queue.size()) {
 			std::string *s = _queue.front();
-			_queue.pop_front();
+			_queue.erase(_queue.begin(), _queue.begin());
 			RawOutputPort::send(std::string(*s));
 			delete s;
 		}

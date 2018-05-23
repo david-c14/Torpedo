@@ -105,7 +105,7 @@ namespace Torpedo {
 	//
 
 	struct QueuedOutputPort : RawOutputPort {
-		std::deque<std::string *> _queue;
+		std::vector<std::string *> _queue;
 		unsigned int _replace = 0;
 		unsigned int _size = 0;
 
