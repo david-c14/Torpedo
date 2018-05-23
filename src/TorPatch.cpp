@@ -439,5 +439,5 @@ struct TorPatchNanoWidget : ModuleWidget {
 	}
 };
 
-Model *modelTorPatch = Model::create<TorPatch, TorPatchWidget>("TorpedoDemo", "Torpedo Patch Demo", "Torpedo Patch Demo", LOGIC_TAG);
-Model *modelTorPatchNano = Model::create<TorPatchNano, TorPatchNanoWidget>("TorpedoDemo", "Torpedo Patch Nano Demo", "Torpedo Patch Demo Cut Down Module", LOGIC_TAG);
+Model *modelTorPatch = Model::create<TorPatch, TorPatchWidget>("TorpedoDemo", "Torpedo Patch Demo", "Torpedo Patch Demo", UTILITY_TAG);
+Model *modelTorPatchNano = Model::create<TorPatchNano, TorPatchNanoWidget>("TorpedoDemo", "Torpedo Patch Nano Demo", "Torpedo Patch Demo Cut Down Module", UTILITY_TAG);

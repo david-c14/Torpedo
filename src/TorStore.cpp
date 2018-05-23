@@ -161,4 +161,4 @@ struct TorStoreWidget : ModuleWidget {
 	}
 };
 
-Model *modelTorStore = Model::create<TorStore, TorStoreWidget>("TorpedoDemo", "Torpedo Store Demo", "Torpedo Store Demo", LOGIC_TAG);
+Model *modelTorStore = Model::create<TorStore, TorStoreWidget>("TorpedoDemo", "Torpedo Store Demo", "Torpedo Store Demo", UTILITY_TAG);
