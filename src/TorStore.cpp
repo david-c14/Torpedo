@@ -36,6 +36,7 @@ struct TorStoreInputPort : Torpedo::RawInputPort {
 };
 
 struct TorStore : Module  {
+	static const int deviceCount = 10;
 	enum ParamIds {
 		PARAM_SEND_1,		// Push button to send message
 		PARAM_SEND_2,
@@ -89,9 +90,9 @@ struct TorStore : Module  {
 		NUM_LIGHTS
 	};
 
-	std::string apps[10] = {"","","","","","","","","",""};
-	std::string messages[10] = {"","","","","","","","","",""};
-	TorStoreInputPort inPorts[10] = {
+	std::string apps[deviceCount] = {"","","","","","","","","",""};
+	std::string messages[deviceCount] = {"","","","","","","","","",""};
+	TorStoreInputPort inPorts[deviceCount] = {
 		TorStoreInputPort(this, INPUT_TOR_1),
 		TorStoreInputPort(this, INPUT_TOR_2),
 		TorStoreInputPort(this, INPUT_TOR_3),
@@ -103,7 +104,7 @@ struct TorStore : Module  {
 		TorStoreInputPort(this, INPUT_TOR_9),
 		TorStoreInputPort(this, INPUT_TOR_10)
 	};
-	Torpedo::RawOutputPort outPorts[10] = {
+	Torpedo::RawOutputPort outPorts[deviceCount] = {
 		Torpedo::RawOutputPort(this, OUTPUT_TOR_1),
 		Torpedo::RawOutputPort(this, OUTPUT_TOR_2),
 		Torpedo::RawOutputPort(this, OUTPUT_TOR_3),
@@ -115,7 +116,7 @@ struct TorStore : Module  {
 		Torpedo::RawOutputPort(this, OUTPUT_TOR_9),
 		Torpedo::RawOutputPort(this, OUTPUT_TOR_10),
 	};
-	SchmittTrigger triggers[10];
+	SchmittTrigger triggers[deviceCount];
 
 	TorStore() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
 
@@ -123,7 +124,7 @@ struct TorStore : Module  {
 };
 
 void TorStore::step() {
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < deviceCount; i++) {
 		if (triggers[i].process(params[TorStore::PARAM_SEND_1 + i].value)) {
 			if (apps[i].length() > 0) {
 				outPorts[i].send(apps[i], messages[i]);
@@ -149,7 +150,7 @@ struct TorStoreWidget : ModuleWidget {
 
 	TorStoreWidget(TorStore *module) : ModuleWidget(module) {
 		setPanel(SVG::load(assetPlugin(plugin, "res/TorStore.svg")));
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < TorStore::deviceCount; i++) {
 			addInput(Port::create<sub_port_black>(Vec(4,30 + 30 * i), Port::INPUT, module, TorStore::INPUT_TOR_1 + i));
 
 			addOutput(Port::create<sub_port_black>(Vec(92,30 + 30 * i), Port::OUTPUT, module, TorStore::OUTPUT_TOR_1 + i));
