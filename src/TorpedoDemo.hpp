@@ -9,5 +9,6 @@ extern Plugin *plugin;
 extern Model *modelTorPatch;
 extern Model *modelTorPatchNano;
 extern Model *modelTorStore;
+extern Model *modelTorNotes;
 
 #include "ComponentLibrary/components.hpp"
