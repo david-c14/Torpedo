@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="240px"
+   height="380px">
+  <g
+     inkscape:label="Background"
+     inkscape:groupmode="layer"
+     id="background">
+    <rect
+       x="0"
+       y="0"
+       width="240"
+       height="380"
+       style="fill:#333333;stroke:none;"
+       id="rect4255" />
+    <path
+       style="fill:#555555;fill-rule:nonzero;stroke:none"
+       d="m 0 380 v -380 h 240 l -1 1 h -238 v 378 z"
+       id="path4656" />
+    <path
+       style="fill:#111111;fill-rule:nonzero;stroke:none"
+       d="m 0 380 h 240 v -380 l -1 1 v 378 h -238 z"
+       id="path4658" />
+  </g>
+  <g
+     inkscape:label="Logo"
+     inkscape:groupmode="layer"
+     id="logo"
+     fill="#777777"
+     font-family="DejaVu Sans"
+     font-size="12">
+    <path
+       d="M 66 346
+          a 9 9 0 0 1 0 18
+          v 0 -6
+          a 3.6 3.6 0 0 0 0 -6
+          z
+          m 12 0 
+          h 87
+          a 9 9 0 0 1 0 18
+          h -87
+          a 9 9 0 0 1 0 -18
+          z
+          m 3 9
+          a 24 24 0 0 0 18 0
+          a 24 24 0 0 0 -18 0
+          z
+       "/>
+       id="path4136"
+       inkscape:connector-curvature="0" />
+    <text
+       x="120" y="377" id="text4662" text-anchor="middle">Torpedo</text>
+    <text x="120" y="12" text-anchor="middle">Notes Demo</text>
+  </g>
+  <g
+     inkscape:label="Group"
+     inkscape:groupmode="layer"
+     id="group1"
+     font-family="DejaVu Sans"
+     font-size="10"
+     stroke="none"
+     fill="#ffffff">
+    <text x="30.5" y="34.5" text-anchor="start">SYNC IN</text>
+    <text x="209.5" y="34.5" text-anchor="end">SYNC OUT</text>
+  </g>
+</svg>
